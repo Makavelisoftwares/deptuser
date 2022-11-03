@@ -1,20 +1,19 @@
 const express=require('express');
 const app=express();
-const mongoose=require('mongoose');
 const helmet=require('helmet');
 const morgan=require('morgan');
 const bodyParser=require('body-parser');
 require('dotenv').config();
 const methodOverride=require('method-override');
-const {sequelize,patients}=require('./models')
+const {sequelize,users,departments}=require('./models');
 const port=5000;
 
 // connecting mongodb database 
 sequelize.authenticate()
     .then(()=>{
-        console.log('connected to the practise database');
+        console.log('connected to the deptuser database');
         app.listen(port,()=>{
-            console.log('listening to requests on port ' +port)
+            console.log('listening to requests on port http://localhost:'+port)
         })
     })
     .catch((err)=>console.log(err))
@@ -29,3 +28,47 @@ app.use(helmet());
 app.use(methodOverride('_method'))
 
 
+app.get('/users',async(req,res)=>{
+    try {
+        const depts=await departments.findAll();
+        const user=await users.findAll();
+        res.render('users',{depts,user});
+    } catch (error) {
+        console.log(error)
+    }
+})
+
+app.post('/users',async(req,res)=>{
+    const {deptid,username}=req.body;
+    try {
+        const dept=await departments.findOne({where:{id:deptid}})
+        const user=await users.create({username,deptid:dept.id})
+
+        res.redirect('/users')
+    } catch (error) {
+        console.log(error)
+    }
+
+})
+
+app.get('/dept',async(req,res)=>{
+    try {
+        const depts=await departments.findAll()
+        res.render('dept',{depts})
+    } catch (error) {
+        console.log(error)
+    }
+})
+
+app.post('/dept',async(req,res)=>{
+    const {deptname}=req.body;
+    try {
+        const dept=await departments.create({deptname});
+        if(dept){
+            res.redirect('/dept')
+        }        
+    } catch (error) {
+        console.log(error)
+    }
+
+})

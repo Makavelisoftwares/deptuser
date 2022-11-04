@@ -5,7 +5,7 @@ const morgan=require('morgan');
 const bodyParser=require('body-parser');
 require('dotenv').config();
 const methodOverride=require('method-override');
-const {sequelize,users,departments}=require('./models');
+const {sequelize,users,departments,roles}=require('./models');
 const port=5000;
 
 // connecting mongodb database 
@@ -32,6 +32,7 @@ app.get('/users',async(req,res)=>{
     try {
         const depts=await departments.findAll();
         const user=await users.findAll();
+        // const role=await roles.findAll();
         res.render('users',{depts,user});
     } catch (error) {
         console.log(error)
@@ -39,12 +40,14 @@ app.get('/users',async(req,res)=>{
 })
 
 app.post('/users',async(req,res)=>{
-    const {deptid,username}=req.body;
+    const {deptid,username,roleid}=req.body;
     try {
         const dept=await departments.findOne({where:{id:deptid}})
-        const user=await users.create({username,deptid:dept.id})
+        const role=await roles.findOne({where:{id:roleid}})
+        const user=await users.create({username,deptid:dept.id,roleid:role.id})
 
-        res.redirect('/users')
+        // res.redirect('/users')
+        res.status(200).json(user)
     } catch (error) {
         console.log(error)
     }
@@ -71,4 +74,26 @@ app.post('/dept',async(req,res)=>{
         console.log(error)
     }
 
+})
+
+
+
+// roles
+app.get('/roles',async(req,res)=>{
+    try {
+        const rol=await roles.findAll();
+        res.render('roles')
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
+
+app.post('/roles',async(req,res)=>{
+    const {rolename}=req.body;
+    try {
+        
+    } catch (error) {
+        res.status(400).json(error)
+    }
 })

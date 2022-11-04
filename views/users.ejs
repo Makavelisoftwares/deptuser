@@ -6,7 +6,7 @@
             <input type="text" name="username" placeholder="username" class="form-control my-3">
             <%if(depts){%>
                 <div class="form-group">
-                    <label for=""></label>
+                    <label for="">department</label>
                     <select class="custom-select" name="deptid" id="">
                         <option selected>Select one</option>
                         <%depts.forEach(dept=>{%>
@@ -16,6 +16,18 @@
                 </div>
             <%}%>
             
+
+            <%if(role){%>
+                <div class="form-group">
+                    <label for="">roles</label>
+                    <select class="custom-select" name="roleid" id="">
+                        <option selected>Select one</option>
+                        <%role.forEach(r=>{%>
+                            <option value="<%-r.id%>"><%-r.rolename%> </option>
+                        <%})%>       
+                    </select>
+                </div>
+           <% }%>
             <button class="btn btn-success">Register</button>
         </form>
         
@@ -30,6 +42,8 @@
                     <th>id</th>
                     <th>username</th>
                     <th>department id</th>
+                    <th>role id</th>
+
                 </tr>
                 </thead>
                 <%if(user){%>
@@ -39,6 +53,7 @@
                                 <td scope="row"><%-u.id%> </td>
                                 <td><%-u.username %> </td>
                                 <td><%-u.deptid%></td>
+                                <td><%-u.roleid%></td>
                             </tr>
                         <%})%>
                         

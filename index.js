@@ -7,6 +7,9 @@ require('dotenv').config();
 const methodOverride=require('method-override');
 const {sequelize,users,departments,roles}=require('./models');
 const port=5000;
+const jwt=require('jsonwebtoken');
+const cookieParser=require('cookie-parser')
+const {protectRoute}=require('./middlewares/authmiddleware')
 
 // connecting mongodb database 
 sequelize.authenticate()
@@ -26,14 +29,24 @@ app.use(express.static('public'));
 app.use(morgan('common'));
 app.use(helmet());
 app.use(methodOverride('_method'))
+app.use(cookieParser());
 
 
-app.get('/users',async(req,res)=>{
+const createToken=(id)=>{
+    return jwt.sign({id},'secret')
+}
+
+
+
+
+// app.get('*',protectRoute)
+
+app.get('/users',protectRoute,async(req,res)=>{
     try {
         const depts=await departments.findAll();
         const user=await users.findAll();
-        // const role=await roles.findAll();
-        res.render('users',{depts,user});
+        const role=await roles.findAll();
+        res.render('users',{depts,user,role});
     } catch (error) {
         console.log(error)
     }
@@ -46,15 +59,15 @@ app.post('/users',async(req,res)=>{
         const role=await roles.findOne({where:{id:roleid}})
         const user=await users.create({username,deptid:dept.id,roleid:role.id})
 
-        // res.redirect('/users')
-        res.status(200).json(user)
+        res.redirect('/users')
+        // res.status(200).json(user)
     } catch (error) {
         console.log(error)
     }
 
 })
 
-app.get('/dept',async(req,res)=>{
+app.get('/dept',protectRoute,async(req,res)=>{
     try {
         const depts=await departments.findAll()
         res.render('dept',{depts})
@@ -79,10 +92,10 @@ app.post('/dept',async(req,res)=>{
 
 
 // roles
-app.get('/roles',async(req,res)=>{
+app.get('/roles',protectRoute,async(req,res)=>{
     try {
         const rol=await roles.findAll();
-        res.render('roles')
+        res.render('roles',{rol})
     } catch (error) {
         res.status(400).json(error)
     }
@@ -92,8 +105,43 @@ app.get('/roles',async(req,res)=>{
 app.post('/roles',async(req,res)=>{
     const {rolename}=req.body;
     try {
+        const rolen=await roles.create({rolename});
+        // res.status(200).json(rolen)
+        res.redirect('/roles')
         
     } catch (error) {
         res.status(400).json(error)
     }
 })
+
+
+app.get('/login',(req,res)=>{
+    res.render('login')
+})
+
+
+
+
+
+app.post('/login',async(req,res,next)=>{
+    const {username}=req.body;
+    try {
+        const user=await users.findOne({where:{username}});
+        if(user){
+            const token=createToken(user.id);
+            const setCookie=res.cookie('auth',token);
+            next()
+            if(setCookie){
+                res.redirect('/users')
+            }
+
+           
+        }else{
+            res.redirect('/login')
+        }
+        
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+

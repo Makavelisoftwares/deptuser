@@ -1,9 +1,29 @@
 <%- include('./partials/header') %>
     <div class="container">
-        <form action="" class="my-3" method="POST">
+        <form action="/roles" class="my-3" method="POST">
             <input type="text" class="form-control" name="rolename">
             <button class="btn btn-info">Add role</button>
         </form>
     </div>
+
+    <div class="container">
+        <table class="table my-4">
+            <thead>
+                <tr>
+                    <th>role id</th>
+                    <th>role name</th>
+                </tr>
+            </thead>
+            <tbody>
+                <%rol.forEach(r=>{%>
+                    <tr>
+                        <td scope="row"><%-r.id %> </td>
+                        <td><%-r.rolename%> </td>
+                    </tr>
+                <%})%>
+            </tbody>
+        </table>
+    </div>
+    
     
 <%- include('./partials/footer') %> 
